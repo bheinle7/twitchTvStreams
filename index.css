@@ -1,0 +1,11 @@
+.borders {
+  border: 1px solid black;
+}
+.col-backs {
+  background-color: blue;
+}
+.img-size {
+  width: 60px;
+  height: 50px;
+  padding-right: 10px;
+}

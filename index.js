@@ -1,46 +1,87 @@
 $(document).ready(function() {
   var channels = ["ESL_SC2", "OgamingSC2", "cretetion", "freecodecamp", "storbeck", "habathcx", "RobotCaleb", "noobs2ninjas", "brunofin", "comster404"]
+  var name, logo, site, status;
   for (var i = 0; i < channels.length; i++) {
-    var url = "https://wind-bow.glitch.me/twitch-api/channels/" + channels[i] + "?callback=?";
-    var j = 0;
-    $.getJSON(url, function(data) {
 
+    (function(i) {
 
+      $.ajax({
+        url: "https://wind-bow.glitch.me/twitch-api/channels/" + channels[i] + "?callback=?",
+        dataType: 'json',
+        async: false,
+        success: function(data) {
+          if (data.display_name) {
 
-      if (data.display_name) {
-        var name = data.display_name;
-      } else if (data.error) {
-        var name = data.message;
-      };
+            name = data.display_name;
+          } else if (data.error) {
+            name = "No channel exists for " + channels[i];
+          };
 
-      if (data.logo) {
-        var logo = data.logo;
-      } else if (data.error) {
-        var logo = "img/notFound.png";
-      } else {
-        var logo = "img/notFound.png";
-      };
+          var snippet = data.status;
 
-      if (data.url) {
-        site = data.url;
-      } else if (data.error) {
-        site = "javascript:;"
-      } else {
-        site = "javascript:;"
-      };
+          if (data.logo) {
+            logo = data.logo;
+          } else if (data.error) {
+            logo = "img/notFound.png";
+          } else {
+            logo = "img/blankLogo.png";
+          };
 
-      createList(name, logo, site, j);
-      j += 1
-      console.log(j)
+          if (data.url) {
+            site = data.url;
+          } else if (data.error) {
+            site = "javascript:;"
+          } else {
+            site = "javascript:;"
+          };
+          createList(channels[i], name, logo, site, snippet)
 
+        }
+      });
+    })(i);
+  }
 
-    });
+  for (var i = 0; i < channels.length; i++) {
+    (function(i) {
+      $.ajax({
+        url: "https://wind-bow.glitch.me/twitch-api/streams/" + channels[i] + "?callback=?",
+        dataType: 'json',
+        async: false,
+        success: function(response) {
+          if (response.stream === null) {
+            status = "offline";
+          } else {
+            status = "online";
+          };
+
+          siteStatus(channels[i], status)
+        }
+      });
+    })(i)
+
+  }
+
+  function createList(channel, name, logo, site, snippet) {
+    $("#chnls").append("<a href=" + site + " target=_blank><div id=" + channel + "> <img class=img-size src=" + logo + " alt=" + name + " Logo>" + name + "<span id=" + channel + "status class=status-style></span><br><span id=" + channel + "snippet class=snippet-style>" + snippet + "</span></div></a>");
+    $("#" + channel).addClass("borders div-size");
   };
 
-  function createList(name, logo, site, j) {
-    $("#chnls").append("<a href=" + site + " target=_blank><div id=chnl" + j + " class=row> <img class=img-size src="+logo+" alt="+name+" Logo>" + name + "</div></a>");
-    //$("#chnl"+j).css(background-image,url(logo))
-    $("#chnl" + j).addClass("borders")
+  function siteStatus(channel, status) {
+    $("#" + channel + "status").text(status);
+    if (status == "offline") {
+      $("#" + channel + "snippet").empty();
+    }
   };
 
+  $("#online").on("click", function() {
+    $("#online").css("background-color", "blue")
+    $("#online").css("border-color", "blue")
+    $("#allbutton").css("border-color", "lightgray")
+    $("#allbutton").css("background-color", "lightgray")
+    for (var i = 0; i < channels.length; i++) {
+      if (($("#" + channels[i] + "status").text()) == "offline") {
+        $("#" + channels[i]).remove();
+      }
+    }
+  })
 });
